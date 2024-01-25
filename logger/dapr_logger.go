@@ -14,11 +14,10 @@ limitations under the License.
 package logger
 
 import (
+	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // daprLogger is the implemention for logrus.
@@ -26,23 +25,24 @@ type daprLogger struct {
 	// name is the name of logger that is published to log as a scope
 	name string
 	// loger is the instance of logrus logger
-	logger *logrus.Entry
+	logger  *logrus.Entry
+	logHook *logHook
 }
 
 var DaprVersion = "unknown"
 
 func newDaprLogger(name string) *daprLogger {
 	newLogger := logrus.New()
-	newLogger.SetOutput(os.Stdout)
-
+	hook := newLogHook(newLogger)
+	newLogger.Hooks.Add(hook)
 	dl := &daprLogger{
-		name: name,
+		name:    name,
+		logHook: hook,
 		logger: newLogger.WithFields(logrus.Fields{
 			logFieldScope: name,
 			logFieldType:  LogTypeLog,
 		}),
 	}
-
 	dl.EnableJSONOutput(defaultJSONOutput)
 
 	return dl
@@ -96,7 +96,8 @@ func toLogrusLevel(lvl LogLevel) logrus.Level {
 
 // SetOutputLevel sets log output level.
 func (l *daprLogger) SetOutputLevel(outputLevel LogLevel) {
-	l.logger.Logger.SetLevel(toLogrusLevel(outputLevel))
+	lvl := toLogrusLevel(outputLevel)
+	l.logger.Logger.SetLevel(lvl)
 }
 
 // IsOutputLevelEnabled returns true if the logger will output this LogLevel.
