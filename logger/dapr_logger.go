@@ -33,6 +33,7 @@ var DaprVersion = "unknown"
 
 func newDaprLogger(name string) *daprLogger {
 	newLogger := logrus.New()
+	newLogger.SetOutput(newConsoleWrite())
 	hook := newLogHook(newLogger)
 	newLogger.Hooks.Add(hook)
 	dl := &daprLogger{
