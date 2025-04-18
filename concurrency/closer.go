@@ -59,10 +59,11 @@ type RunnerCloserManager struct {
 	stopped chan struct{}
 }
 
+// liuxd  删除参数 gracePeriod
 // NewRunnerCloserManager creates a new RunnerCloserManager with the given
 // grace period and runners.
-// If gracePeriod is nil, the grace period is infinite.
-func NewRunnerCloserManager(log logger.Logger, gracePeriod *time.Duration, runners ...Runner) *RunnerCloserManager {
+// If gracePeriod is nil, the grace period is infinite.\
+func NewRunnerCloserManager(log logger.Logger, /* liuxd gracePeriod *time.Duration,*/ runners ...Runner) *RunnerCloserManager {
 	c := &RunnerCloserManager{
 		mngr:               NewRunnerManager(runners...),
 		clock:              clock.RealClock{},
@@ -70,7 +71,8 @@ func NewRunnerCloserManager(log logger.Logger, gracePeriod *time.Duration, runne
 		closeCh:            make(chan struct{}),
 		closeFatalShutdown: make(chan struct{}),
 	}
-
+	gp := time.Duration(5 * time.Second)
+	gracePeriod := &gp
 	if gracePeriod == nil {
 		log.Warn("Graceful shutdown timeout is infinite, will wait indefinitely to shutdown")
 		return c
